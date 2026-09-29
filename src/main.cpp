@@ -208,7 +208,7 @@ class $modify(LevelDurationLayer, LevelInfoLayer) {
             auto glm = GameLevelManager::sharedState();
             if (glm) {
                 glm->m_levelDownloadDelegate = this;
-                glm->downloadLevel(level->m_levelID, false);
+                glm->downloadLevel(level->m_levelID, false, 0);
             }
         }
 

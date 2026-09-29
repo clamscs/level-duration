@@ -11,38 +11,37 @@ using namespace geode::prelude;
 std::string formatDuration(int64_t totalSeconds) {
     if (totalSeconds <= 0) return "";
 
-    constexpr int64_t MINUTE = 60;
-    constexpr int64_t HOUR = 3600;
-    constexpr int64_t DAY = 86400;
-    constexpr int64_t MONTH = 2592000;
-    constexpr int64_t YEAR = 31536000;
+    struct TimeUnit {
+        const char* suffix;
+        int64_t seconds;
+    };
 
-    int64_t rem = totalSeconds;
-    int64_t years = rem / YEAR;
-    rem %= YEAR;
-
-    int64_t months = rem / MONTH;
-    rem %= MONTH;
-
-    int64_t days = rem / DAY;
-    rem %= DAY;
-
-    int64_t hours = rem / HOUR;
-    rem %= HOUR;
-
-    int64_t minutes = rem / MINUTE;
-    int64_t seconds = rem % MINUTE;
+    static constexpr TimeUnit UNITS[] = {
+        { "mil", 31'536'000'000LL },
+        { "c",   3'153'600'000LL },
+        { "dec", 315'360'000LL },
+        { "y",   31'536'000LL },
+        { "mo",  2'592'000LL },
+        { "w",   604'800LL },
+        { "d",   86'400LL },
+        { "h",   3'600LL },
+        { "m",   60LL },
+        { "s",   1LL }
+    };
 
     std::string result;
-    if (years > 0) result += std::to_string(years) + "y ";
-    if (months > 0) result += std::to_string(months) + "mo ";
-    if (days > 0) result += std::to_string(days) + "d ";
-    if (hours > 0) result += std::to_string(hours) + "h ";
-    if (minutes > 0) result += std::to_string(minutes) + "m ";
-    if (seconds > 0 || result.empty()) result += std::to_string(seconds) + "s";
-    else if (!result.empty() && result.back() == ' ') result.pop_back();
+    int64_t rem = totalSeconds;
 
-    return result;
+    for (const auto& unit : UNITS) {
+        int64_t val = rem / unit.seconds;
+        if (val > 0) {
+            if (!result.empty()) result += " ";
+            result += std::to_string(val) + unit.suffix;
+            rem %= unit.seconds;
+        }
+    }
+
+    return result.empty() ? "0s" : result;
 }
 
 struct SpeedChange {
